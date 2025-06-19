@@ -1,14 +1,21 @@
-.architect
-bootstrap.css
-bootstrap.js
-bootstrap.json
-bootstrap.jsonp
-build/
-classic.json
-classic.jsonp
-ext/
-modern.json
-modern.jsonp
-resources/sass/.sass-cache/
-resources/.arch-internal-preview.css
-.arch-internal-preview.css
+# Compiler files
+cache/
+
+# Ignores development broadcast logs
+!/broadcast
+/broadcast/*/31337/
+/broadcast/**/dry-run/
+
+# Docs
+docs/
+
+# Dotenv file
+.env
+
+lib/
+node_modules/
+
+/broadcast/
+.idea
+
+/out
