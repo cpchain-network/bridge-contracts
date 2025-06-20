@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 interface IPoolManager {
     struct Pool {
@@ -70,6 +70,36 @@ interface IPoolManager {
         uint256 value
     );
 
+    event ClaimEvent(
+        address indexed user,
+        uint256 startPoolId,
+        uint256 endPoolId,
+        address indexed token,
+        uint256 amount,
+        uint256 fee
+    );
+
+    event ClaimReward(
+        address _user,
+        uint256 startPoolId,
+        uint256 EndPoolId,
+        address _token,
+        uint Reward
+    );
+
+    event Withdraw(
+        address _user,
+        uint256 startPoolId,
+        uint256 EndPoolId,
+        address _token,
+        uint Amount,
+        uint Reward
+    );
+
+    event CompletePoolEvent(address indexed token, uint256 poolIndex);
+    event SetMinStakeAmountEvent(address indexed token, uint256 amount);
+    event SetSupportTokenEvent(address indexed token, bool isSupport);
+
     error NoReward();
 
     error NewPoolIsNotCreate(uint256 PoolIndex);
@@ -111,18 +141,36 @@ interface IPoolManager {
     function BridgeInitiateETH(uint256 sourceChainId, uint256 destChainId, address to) external payable returns (bool);
     function BridgeInitiateERC20(uint256 sourceChainId, uint256 destChainId, address to, address ERC20Address, uint256 value) external returns (bool);
 
-    function BridgeFinalizeETH(uint256 sourceChainId, uint256 destChainId, address to, uint256 amount, uint256 _fee, uint256 _nonce) external payable onlyRole(ReLayer) returns (bool);
-    function BridgeFinalizeERC20(uint256 sourceChainId, uint256 destChainId, address to, address ERC20Address, uint256 amount, uint256 _fee, uint256 _nonce) external onlyRole(ReLayer) returns (bool);
+    function BridgeFinalizeETH(uint256 sourceChainId, uint256 destChainId, address to, uint256 amount, uint256 _fee, uint256 _nonce) external payable returns (bool);
+    function BridgeFinalizeERC20(uint256 sourceChainId, uint256 destChainId, address to, address ERC20Address, uint256 amount, uint256 _fee, uint256 _nonce) external returns (bool);
 
-    function IsSupportChainId(uint256 chainId) public view returns (bool);
+    function DepositAndStakingETH() external payable;
+    function DepositAndStakingERC20(address _token, uint256 _amount) external;
 
+    function CompletePoolAndNew(Pool[] memory CompletePools) external payable;
+
+    function WithdrawAll() external;
+    function ClaimAllReward() external;
+    function WithdrawByID(uint i) external;
+    function ClaimbyID(uint i) external;
+    function QuickSendAssertToUser(address _token, address to, uint256 _amount) external;
+    function getPrincipal() external view returns (KeyValuePair[] memory);
+    function getReward() external view returns (KeyValuePair[] memory);
     function WithdrawPoolManagerAssetTo(address _token, address to, uint256 _amount) external;
 
     function setMinTransferAmount(uint256 _MinTransferAmount) external;
-
     function setValidChainId(uint256 chainId, bool isValid) external;
-
     function setSupportERC20Token(address ERC20Address, bool isValid) external;
-
     function setPerFee(uint256 _PerFee) external;
+    function setMinStakeAmount(address _token, uint256 _amount) external;
+    function setSupportToken(address _token, bool _isSupport, uint32 startTimes) external;
+
+    function fetchFundingPoolBalance(address token) external view returns(uint256);
+    function getPoolLength(address _token) external view returns (uint256);
+    function getUserLength(address _user) external view returns (uint256) ;
+    function getPool(address _token, uint256 _index) external view returns (Pool memory);
+    function getUser(address _user) external view returns (User[] memory);
+
+    function pause() external;
+    function unpause() external;
 }
