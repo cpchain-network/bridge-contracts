@@ -34,7 +34,8 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         PerFee = 10000;
         stakingMessageNumber = 1;
 
-        _transferOwnership(initialOwner);
+        __Ownable_init(initialOwner);
+
 
         messageManager = IMessageManager(_messageManager);
         relayerAddress = _relayerAddress;
@@ -134,7 +135,9 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
             revert TokenIsNotSupported(ERC20Address);
         }
 
+        require(IERC20(ERC20Address).balanceOf(address(this)) >= amount, "PoolManager: insufficient token balance for transfer");
         IERC20(ERC20Address).safeTransfer(to, amount);
+
         FundingPoolBalance[ERC20Address] -= amount;
 
         messageManager.claimMessage(sourceChainId, destChainId, to, _fee, amount, _nonce);
@@ -226,6 +229,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         for (uint256 i = 0; i < SupportTokens.length; i++) {
             WithdrawOrClaimBySimpleAsset(msg.sender, SupportTokens[i], true);
         }
+
     }
 
     function ClaimAllReward() external nonReentrant whenNotPaused {
@@ -413,9 +417,9 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         for (uint256 i = 0; i < CompletePools.length; i++) {
             address _token = CompletePools[i].token;
             uint PoolIndex = Pools[_token].length - 1;
-            Pools[_token][PoolIndex - 1].IsCompleted = true;
-            if (PoolIndex - 1 != 0) {
-                Pools[_token][PoolIndex - 1].TotalFee = FeePoolValue[_token];
+            Pools[_token][PoolIndex].IsCompleted = true;
+            if (PoolIndex != 0) {
+                Pools[_token][PoolIndex].TotalFee = FeePoolValue[_token];
                 FeePoolValue[_token] = 0;
             }
             uint32 startTimes = Pools[_token][PoolIndex].endTimestamp;
@@ -473,17 +477,19 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         if (Pools[_token].length == 0) {
             revert NewPoolIsNotCreate(0);
         }
-        for (uint256 index = 0; index < Users[_user].length; index++) {
-            if (Users[_user][index].token == _token) {
-                if (Users[_user][index].isWithdrawed) {
+        for (uint256 index = Users[_user].length; index > 0; index--) {
+            uint256 currentIndex = index -1;
+
+            if (Users[_user][currentIndex].token == _token) {
+                if (Users[_user][currentIndex].isWithdrawed) {
                     continue;
                 }
 
                 uint256 EndPoolId = Pools[_token].length - 1;
 
                 uint256 Reward = 0;
-                uint256 Amount = Users[_user][index].Amount;
-                uint256 startPoolId = Users[_user][index].StartPoolId;
+                uint256 Amount = Users[_user][currentIndex].Amount;
+                uint256 startPoolId = Users[_user][currentIndex].StartPoolId;
 
                 for (uint256 j = startPoolId; j < EndPoolId; j++) {
                     uint256 _Reward = (Amount *
@@ -493,26 +499,27 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
                 }
 
                 Amount += Reward;
-                Users[_user][index].isWithdrawed = true;
+
+                Users[_user][currentIndex].isWithdrawed = true;
 
                 if (IsWithdraw) {
-                    Pools[_token][EndPoolId].TotalAmount -= Users[_user][index]
+                    Pools[_token][EndPoolId].TotalAmount -= Users[_user][currentIndex]
                         .Amount;
                     SendAssertToUser(_token, _user, Amount);
                     if (Users[_user].length > 0) {
-                        Users[_user][index] = Users[_user][Users[_user].length - 1];
+                        Users[_user][currentIndex] = Users[_user][Users[_user].length - 1];
                         Users[_user].pop();
-                        index--;
                     }
                     emit Withdraw(_user, startPoolId, EndPoolId, _token, Amount - Reward, Reward);
                 } else {
-                    Users[_user][index].StartPoolId = EndPoolId;
+                    Users[_user][currentIndex].StartPoolId = EndPoolId;
                     SendAssertToUser(_token, _user, Reward);
                     emit ClaimReward(_user, startPoolId, EndPoolId, _token, Reward);
                 }
             }
         }
     }
+
 
     function WithdrawOrClaimBySimpleID(address _user, uint index, bool IsWithdraw) internal {
         address _token = Users[_user][index].token;

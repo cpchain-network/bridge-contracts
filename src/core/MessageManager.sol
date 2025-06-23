@@ -17,7 +17,7 @@ contract MessageManager is Initializable, ReentrancyGuardUpgradeable, OwnableUpg
         poolManagerAddress = _poolManagerAddress;
         nextMessageNumber = 1;
         __ReentrancyGuard_init();
-        transferOwnership(initialOwner);
+        __Ownable_init(initialOwner);
     }
 
     modifier onlyTokenBridge() {
