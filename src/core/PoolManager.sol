@@ -178,7 +178,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
             revert NewPoolIsNotCreate(PoolIndex + 1);
         }
         FundingPoolBalance[ETHAddress] += msg.value;
-        emit StakingETHEvent(msg.sender, msg.value);
+        emit StakingETHEvent(msg.sender, block.chainid, msg.value);
     }
 
     function DepositAndStakingERC20(address _token, uint256 _amount) external nonReentrant whenNotPaused {
@@ -217,7 +217,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
             revert NewPoolIsNotCreate(PoolIndex + 1);
         }
         FundingPoolBalance[_token] += _amount;
-        emit StarkingERC20Event(msg.sender, _token, _amount);
+        emit StarkingERC20Event(msg.sender, _token, block.chainid, _amount);
     }
 
 
@@ -375,7 +375,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
             revert Zero(_amount);
         }
         MinStakeAmount[_token] = _amount;
-        emit SetMinStakeAmountEvent(_token, _amount);
+        emit SetMinStakeAmountEvent(_token, _amount, block.chainid);
     }
 
     function setSupportToken(address _token, bool _isSupport, uint32 startTimes) external onlyReLayer {
@@ -407,7 +407,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
 
         //Next bridge
         SupportTokens.push(_token);
-        emit SetSupportTokenEvent(_token, _isSupport);
+        emit SetSupportTokenEvent(_token, _isSupport, block.chainid);
     }
 
     /***************************************
@@ -434,7 +434,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
                     IsCompleted: false
                 })
             );
-            emit CompletePoolEvent(_token, PoolIndex);
+            emit CompletePoolEvent(_token, PoolIndex, block.chainid);
         }
     }
 
@@ -510,11 +510,11 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
                         Users[_user][currentIndex] = Users[_user][Users[_user].length - 1];
                         Users[_user].pop();
                     }
-                    emit Withdraw(_user, startPoolId, EndPoolId, _token, Amount - Reward, Reward);
+                    emit Withdraw(_user, startPoolId, EndPoolId, block.chainid, _token, Amount - Reward, Reward);
                 } else {
                     Users[_user][currentIndex].StartPoolId = EndPoolId;
                     SendAssertToUser(_token, _user, Reward);
-                    emit ClaimReward(_user, startPoolId, EndPoolId, _token, Reward);
+                    emit ClaimReward(_user, startPoolId, EndPoolId, block.chainid, _token, Reward);
                 }
             }
         }
@@ -547,11 +547,11 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
                 Users[_user][index] = Users[_user][Users[_user].length - 1];
                 Users[_user].pop();
             }
-            emit Withdraw(_user, startPoolId, EndPoolId, _token, Amount - Reward, Reward);
+            emit Withdraw(_user, startPoolId, EndPoolId,  block.chainid, _token, Amount - Reward, Reward);
         } else {
             Users[_user][index].StartPoolId = EndPoolId;
             SendAssertToUser(_token, _user, Reward);
-            emit ClaimReward(_user, startPoolId, EndPoolId, _token, Reward);
+            emit ClaimReward(_user, startPoolId, EndPoolId,  block.chainid, _token, Reward);
         }
     }
 

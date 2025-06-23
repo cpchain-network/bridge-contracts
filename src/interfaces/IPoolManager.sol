@@ -28,11 +28,13 @@ interface IPoolManager {
     event StarkingERC20Event(
         address indexed user,
         address indexed token,
+        uint256 chainId,
         uint256 amount
     );
 
     event StakingETHEvent(
         address indexed user,
+        uint256 chainId,
         uint256 amount
     );
 
@@ -70,19 +72,11 @@ interface IPoolManager {
         uint256 value
     );
 
-    event ClaimEvent(
-        address indexed user,
-        uint256 startPoolId,
-        uint256 endPoolId,
-        address indexed token,
-        uint256 amount,
-        uint256 fee
-    );
-
     event ClaimReward(
         address _user,
         uint256 startPoolId,
         uint256 EndPoolId,
+        uint256 chainId,
         address _token,
         uint Reward
     );
@@ -91,14 +85,15 @@ interface IPoolManager {
         address _user,
         uint256 startPoolId,
         uint256 EndPoolId,
+        uint256 chainId,
         address _token,
         uint Amount,
         uint Reward
     );
 
-    event CompletePoolEvent(address indexed token, uint256 poolIndex);
-    event SetMinStakeAmountEvent(address indexed token, uint256 amount);
-    event SetSupportTokenEvent(address indexed token, bool isSupport);
+    event CompletePoolEvent(address indexed token, uint256 poolIndex, uint256 chainId);
+    event SetMinStakeAmountEvent(address indexed token, uint256 amount, uint256 chainId);
+    event SetSupportTokenEvent(address indexed token, bool isSupport, uint256 chainId);
 
     error NoReward();
 
