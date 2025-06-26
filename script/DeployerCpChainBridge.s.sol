@@ -56,13 +56,22 @@ contract DeployerCpChainBridge is Script {
             abi.encodeWithSelector(
                 PoolManager.initialize.selector,
                 deployerAddress,
-                poolManager,
+                messageManager,
                 relayerAddress
             )
         );
 
         console.log("deploy proxyMessageManager:", address(proxyMessageManager));
         console.log("deploy proxyPoolManager:", address(proxyPoolManager));
+<<<<<<< crazycat
+        // string memory path = "deployed_addresses.json";
+        // string memory data = string(abi.encodePacked(
+        //     '{"proxyMessageManager": "', vm.toString(address(proxyMessageManager)), '", ',
+        //     '"proxyPoolManager": "', vm.toString(address(proxyPoolManager)), '"}'
+        // ));
+        // vm.writeJson(data, path);
+        // vm.stopBroadcast();
+=======
 //        string memory path = "./output/deployed_addresses.json";
 //        string memory data = string(abi.encodePacked(
 //            '{"proxyMessageManager": "', vm.toString(address(proxyMessageManager)), '", ',
@@ -70,6 +79,7 @@ contract DeployerCpChainBridge is Script {
 //        ));
 //        vm.writeJson(data, path);
         vm.stopBroadcast();
+>>>>>>> main
     }
 
     function getProxyAdminAddress(address proxy) internal view returns (address) {
