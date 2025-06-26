@@ -38,7 +38,7 @@ contract DeployerCpChainBridge is Script {
         TransparentUpgradeableProxy proxyPoolManager = new TransparentUpgradeableProxy(address(emptyContract), cpChainMultiSign, "");
         poolManager = PoolManager(address(proxyPoolManager));
         poolManagerImplementation = new PoolManager();
-        poolManagerProxyAdmin = ProxyAdmin(getProxyAdminAddress(address(poolManagerImplementation)));
+        poolManagerProxyAdmin = ProxyAdmin(getProxyAdminAddress(address(proxyPoolManager)));
 
         messageManagerProxyAdmin.upgradeAndCall(
             ITransparentUpgradeableProxy(address(messageManager)),
@@ -63,12 +63,12 @@ contract DeployerCpChainBridge is Script {
 
         console.log("deploy proxyMessageManager:", address(proxyMessageManager));
         console.log("deploy proxyPoolManager:", address(proxyPoolManager));
-        string memory path = "deployed_addresses.json";
-        string memory data = string(abi.encodePacked(
-            '{"proxyMessageManager": "', vm.toString(address(proxyMessageManager)), '", ',
-            '"proxyPoolManager": "', vm.toString(address(proxyPoolManager)), '"}'
-        ));
-        vm.writeJson(data, path);
+//        string memory path = "./output/deployed_addresses.json";
+//        string memory data = string(abi.encodePacked(
+//            '{"proxyMessageManager": "', vm.toString(address(proxyMessageManager)), '", ',
+//            '"proxyPoolManager": "', vm.toString(address(proxyPoolManager)), '"}'
+//        ));
+//        vm.writeJson(data, path);
         vm.stopBroadcast();
     }
 

@@ -61,7 +61,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
 
         FeePoolValue[ETHAddress] += fee;
 
-        messageManager.sendMessage(block.chainid, destChainId, to, amount, fee);
+        messageManager.sendMessage(block.chainid, destChainId, ETHAddress, msg.sender, to, amount, fee);
 
         emit InitiateETH(sourceChainId, destChainId, msg.sender, to, amount);
 
@@ -92,7 +92,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         amount -= fee;
         FeePoolValue[ERC20Address] += fee;
 
-        messageManager.sendMessage(sourceChainId, destChainId, to, amount, fee);
+        messageManager.sendMessage(sourceChainId, destChainId, ERC20Address, msg.sender, to, amount, fee);
 
         emit InitiateERC20(sourceChainId, destChainId, ERC20Address, msg.sender, to, amount);
 
@@ -115,7 +115,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
 
         FundingPoolBalance[ETHAddress] -= amount;
 
-        messageManager.claimMessage(sourceChainId, destChainId, to, _fee, amount, _nonce);
+        messageManager.claimMessage(sourceChainId, destChainId, ETHAddress, msg.sender, to, _fee, amount, _nonce);
 
         emit FinalizeETH(sourceChainId, destChainId, address(this), to, amount);
 
@@ -140,7 +140,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
 
         FundingPoolBalance[ERC20Address] -= amount;
 
-        messageManager.claimMessage(sourceChainId, destChainId, to, _fee, amount, _nonce);
+        messageManager.claimMessage(sourceChainId, destChainId, ERC20Address, msg.sender, to, _fee, amount, _nonce);
 
         emit FinalizeERC20(sourceChainId, destChainId, ERC20Address, address(this), to, amount);
 
