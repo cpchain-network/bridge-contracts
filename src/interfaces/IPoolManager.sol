@@ -62,7 +62,8 @@ interface IPoolManager {
     event InitiateERC20(
         uint256 sourceChainId,
         uint256 destChainId,
-        address indexed ERC20Address,
+        address sourceTokenAddress,
+        address destTokenAddress,
         address indexed from,
         address indexed to,
         uint256 value
@@ -79,7 +80,8 @@ interface IPoolManager {
     event FinalizeERC20(
         uint256 sourceChainId,
         uint256 destChainId,
-        address indexed ERC20Address,
+        address sourceTokenAddress,
+        address destTokenAddress,
         address indexed from,
         address indexed to,
         uint256 value
@@ -147,10 +149,10 @@ interface IPoolManager {
     error TransferETHFailed();
 
     function BridgeInitiateETH(uint256 sourceChainId, uint256 destChainId, address to) external payable returns (bool);
-    function BridgeInitiateERC20(uint256 sourceChainId, uint256 destChainId, address to, address ERC20Address, uint256 value) external returns (bool);
+    function BridgeInitiateERC20(uint256 sourceChainId, uint256 destChainId, address to, address sourceTokenAddress, address destTokenAddress, uint256 value) external returns (bool);
 
     function BridgeFinalizeETH(uint256 sourceChainId, uint256 destChainId, address from, address to, uint256 amount, uint256 _fee, uint256 _nonce) external payable returns (bool);
-    function BridgeFinalizeERC20(uint256 sourceChainId, uint256 destChainId, address from, address to, address ERC20Address, uint256 amount, uint256 _fee, uint256 _nonce) external returns (bool);
+    function BridgeFinalizeERC20(uint256 sourceChainId, uint256 destChainId, address from, address to, address sourceTokenAddress, address destTokenAddress, uint256 amount, uint256 _fee, uint256 _nonce) external returns (bool);
 
     function DepositAndStakingETH() external payable;
     function DepositAndStakingERC20(address _token, uint256 _amount) external;

@@ -123,14 +123,14 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
 
         FeePoolValue[ETHAddress] += fee;
 
-        messageManager.sendMessage(block.chainid, destChainId, ETHAddress, msg.sender, to, amount, fee);
+        messageManager.sendMessage(block.chainid, destChainId, ETHAddress, ETHAddress, msg.sender, to, amount, fee);
 
         emit InitiateETH(sourceChainId, destChainId, msg.sender, to, amount);
 
         return true;
     }
 
-    function BridgeInitiateERC20(uint256 sourceChainId, uint256 destChainId, address to, address ERC20Address, uint256 value) external nonReentrant returns (bool) {
+    function BridgeInitiateERC20(uint256 sourceChainId, uint256 destChainId, address to, address sourceTokenAddress, address destTokenAddress, uint256 value) external nonReentrant returns (bool) {
         if (sourceChainId != block.chainid) {
             revert sourceChainIdError();
         }
@@ -139,24 +139,24 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
             revert ChainIdIsNotSupported(destChainId);
         }
 
-        if (!IsSupportToken[ERC20Address]) {
-            revert TokenIsNotSupported(ERC20Address);
+        if (!IsSupportToken[sourceTokenAddress]) {
+            revert TokenIsNotSupported(sourceTokenAddress);
         }
 
-        uint256 BalanceBefore = IERC20(ERC20Address).balanceOf(address(this));
-        IERC20(ERC20Address).safeTransferFrom(msg.sender, address(this), value);
-        uint256 BalanceAfter = IERC20(ERC20Address).balanceOf(address(this));
+        uint256 BalanceBefore = IERC20(sourceTokenAddress).balanceOf(address(this));
+        IERC20(sourceTokenAddress).safeTransferFrom(msg.sender, address(this), value);
+        uint256 BalanceAfter = IERC20(sourceTokenAddress).balanceOf(address(this));
 
         uint256 amount = BalanceAfter - BalanceBefore;
-        FundingPoolBalance[ERC20Address] += value;
+        FundingPoolBalance[sourceTokenAddress] += value;
         uint256 fee = (amount * PerFee) / 1_000_000;
 
         amount -= fee;
-        FeePoolValue[ERC20Address] += fee;
+        FeePoolValue[sourceTokenAddress] += fee;
 
-        messageManager.sendMessage(sourceChainId, destChainId, ERC20Address, msg.sender, to, amount, fee);
+        messageManager.sendMessage(sourceChainId, destChainId, sourceTokenAddress, destTokenAddress, msg.sender, to, amount, fee);
 
-        emit InitiateERC20(sourceChainId, destChainId, ERC20Address, msg.sender, to, amount);
+        emit InitiateERC20(sourceChainId, destChainId, sourceTokenAddress, destTokenAddress, msg.sender, to, amount);
 
         return true;
     }
@@ -177,14 +177,14 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
 
         FundingPoolBalance[ETHAddress] -= amount;
 
-        messageManager.claimMessage(sourceChainId, destChainId, ETHAddress, from, to, amount, _fee, _nonce);
+        messageManager.claimMessage(sourceChainId, destChainId, ETHAddress, ETHAddress, from, to, amount, _fee, _nonce);
 
         emit FinalizeETH(sourceChainId, destChainId, address(this), to, amount);
 
         return true;
     }
 
-    function BridgeFinalizeERC20(uint256 sourceChainId, uint256 destChainId, address from, address to, address ERC20Address, uint256 amount, uint256 _fee, uint256 _nonce) external onlyReLayer returns (bool) {
+    function BridgeFinalizeERC20(uint256 sourceChainId, uint256 destChainId, address from, address to,address sourceTokenAddress, address destTokenAddress, uint256 amount, uint256 _fee, uint256 _nonce) external onlyReLayer returns (bool) {
         if (destChainId != block.chainid) {
             revert sourceChainIdError();
         }
@@ -193,18 +193,18 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
             revert ChainIdIsNotSupported(sourceChainId);
         }
 
-        if (!IsSupportToken[ERC20Address]) {
-            revert TokenIsNotSupported(ERC20Address);
+        if (!IsSupportToken[destTokenAddress]) {
+            revert TokenIsNotSupported(destTokenAddress);
         }
 
-        require(IERC20(ERC20Address).balanceOf(address(this)) >= amount, "PoolManager: insufficient token balance for transfer");
-        IERC20(ERC20Address).safeTransfer(to, amount);
+        require(IERC20(destTokenAddress).balanceOf(address(this)) >= amount, "PoolManager: insufficient token balance for transfer");
+        IERC20(destTokenAddress).safeTransfer(to, amount);
 
-        FundingPoolBalance[ERC20Address] -= amount;
+        FundingPoolBalance[destTokenAddress] -= amount;
 
-        messageManager.claimMessage(sourceChainId, destChainId, ERC20Address, from, to, amount, _fee, _nonce);
+        messageManager.claimMessage(sourceChainId, destChainId, sourceTokenAddress, destTokenAddress, from, to, amount, _fee, _nonce);
 
-        emit FinalizeERC20(sourceChainId, destChainId, ERC20Address, address(this), to, amount);
+        emit FinalizeERC20(sourceChainId, destChainId, sourceTokenAddress, destTokenAddress, address(this), to, amount);
 
         return true;
     }
