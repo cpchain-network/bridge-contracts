@@ -23,13 +23,13 @@ contract PoolManagerTest is Test {
 
     address bridge_cat = makeAddr("bridge_cat");
     address bridge_seek = makeAddr("bridge_seek");
-    
+
     address admin;
     address ReLayer;
 
     function setUp() public {
         admin = makeAddr("admin");
-        ReLayer = makeAddr("ReLayer"); 
+        ReLayer = makeAddr("ReLayer");
 
         PoolManager poolManagerLogic = new PoolManager();
         MessageManager messageManagerLogic = new MessageManager();
@@ -46,8 +46,8 @@ contract PoolManagerTest is Test {
         sourceMessageManager = MessageManager(address(sourceMessageManagerProxy));
         destMessageManager = MessageManager(address(destMessageManagerProxy));
 
-        sourcePoolManager.initialize(admin, address(sourceMessageManager), ReLayer);
-        destPoolManager.initialize(admin, address(destMessageManager), ReLayer);
+        sourcePoolManager.initialize(admin, address(sourceMessageManager), ReLayer, admin);
+        destPoolManager.initialize(admin, address(destMessageManager), ReLayer, admin);
         sourceMessageManager.initialize(admin, address(sourcePoolManager));
         destMessageManager.initialize(admin, address(destPoolManager));
         vm.stopPrank();
@@ -85,7 +85,7 @@ contract PoolManagerTest is Test {
         vm.stopPrank();
 
         vm.warp(startTime - 1 hours);
-        
+
         vm.prank(cat);
         sourcePoolManager.DepositAndStakingETH{value: stakeAmount}();
 
@@ -100,7 +100,7 @@ contract PoolManagerTest is Test {
         uint256 bridgeCalls = 10;
         uint256 singleBridgeAmount = 1 ether;
         uint256 totalBridgedAmount = bridgeCalls * singleBridgeAmount;
-        
+
         for (uint256 i = 0; i < bridgeCalls; i++) {
             _bridge_ETH(1, bridge_cat, bridge_seek);
         }
@@ -113,7 +113,7 @@ contract PoolManagerTest is Test {
 
         PoolManager.Pool memory poolToComplete = sourcePoolManager.getPool(ethTokenAddress, 1);
         vm.warp(poolToComplete.endTimestamp + 1 hours);
-        
+
         vm.startPrank(ReLayer);
         PoolManager.Pool[] memory poolsToCompleteArray = new PoolManager.Pool[](1);
         poolsToCompleteArray[0] = poolToComplete;
@@ -125,7 +125,7 @@ contract PoolManagerTest is Test {
         PoolManager.Pool memory completedPoolInfo = sourcePoolManager.getPool(ethTokenAddress, 1);
         assertEq(completedPoolInfo.TotalFee, expectedTotalFee, "Completed pool's total fee was not set correctly");
         assertTrue(completedPoolInfo.IsCompleted, "Pool 1 should be marked as completed");
-        assertEq(sourcePoolManager.FeePoolValue(ethTokenAddress), 0, "FeePoolValue should be reset");    
+        assertEq(sourcePoolManager.FeePoolValue(ethTokenAddress), 0, "FeePoolValue should be reset");
     }
 
     function _bridge_ETH(uint256 amount, address from ,address to) internal {
@@ -139,14 +139,14 @@ contract PoolManagerTest is Test {
         vm.chainId(SOURCE_CHAIN_ID);
         vm.prank(from);
         sourcePoolManager.BridgeInitiateETH{value: bridgeAmount}(SOURCE_CHAIN_ID, DEST_CHAIN_ID, seek);
-        
+
         assertEq(sourcePoolManager.FundingPoolBalance(ethTokenAddress), balanceBefore + bridgeAmount, "FundingPoolBalance for ETH should increase by bridgeAmount");
         assertEq(sourceMessageManager.nextMessageNumber(), nextMessageNumberBefore + 1, "nextMessageNumber should be incremented");
 
         uint256 perFee = sourcePoolManager.PerFee();
         uint256 fee = (bridgeAmount * perFee) / 1_000_000;
         uint256 amountAfterFee = bridgeAmount - fee;
-        
+
         uint256 messageNonce = nextMessageNumberBefore;
         bytes32 messageHash = keccak256(
             abi.encode(SOURCE_CHAIN_ID, DEST_CHAIN_ID, seek, fee, amountAfterFee, messageNonce)
@@ -175,7 +175,7 @@ contract PoolManagerTest is Test {
         uint256 perFee = sourcePoolManager.PerFee();
         uint256 fee = (bridgeAmount * perFee) / 1_000_000;
         uint256 amountAfterFee = bridgeAmount - fee;
-        
+
         uint256 messageNonce = 1;
         bytes32 messageHash = keccak256(
             abi.encode(SOURCE_CHAIN_ID, DEST_CHAIN_ID, seek, fee, amountAfterFee, messageNonce)
@@ -192,7 +192,7 @@ contract PoolManagerTest is Test {
         PoolManager.Pool memory ethPool = sourcePoolManager.getPool(ethTokenAddress, 1);
 
         uint256 expectedEthReward = (ethStake * ethPool.TotalFee) / ethPool.TotalAmount;
-        
+
         uint256 ethBalanceBefore = cat.balance;
 
         vm.prank(cat);
@@ -203,12 +203,12 @@ contract PoolManagerTest is Test {
         uint256 actualEthReward = ethBalanceAfter - ethBalanceBefore - ethStake;
 
         assertEq(ethBalanceAfter - ethBalanceBefore, ethStake + expectedEthReward, "ETH withdrawal (principal + reward) is incorrect");
-        
+
         assertEq(actualEthReward, expectedEthReward, "ETH reward calculation is incorrect");
 
         uint256 expectedRemainingEthBalance = 5 ether - (5 ether * sourcePoolManager.PerFee()) / 1_000_000;
         assertEq(sourcePoolManager.FundingPoolBalance(ethTokenAddress), expectedRemainingEthBalance, "FundingPoolBalance for ETH should equal bridged amount minus fees");
-        
+
         assertEq(sourcePoolManager.FeePoolValue(ethTokenAddress), 0, "FeePoolValue for ETH should be 0");
     }
 
@@ -222,7 +222,7 @@ contract PoolManagerTest is Test {
 
         uint256 expectedEthReward = (ethStake * ethPool.TotalFee) / ethPool.TotalAmount;
         uint256 expectedErc20Reward = (erc20Stake * erc20Pool.TotalFee) / erc20Pool.TotalAmount;
-        
+
         uint256 ethBalanceBefore = cat.balance;
         uint256 erc20BalanceBefore = erc20Token.balanceOf(cat);
 
@@ -237,7 +237,7 @@ contract PoolManagerTest is Test {
 
         assertEq(ethBalanceAfter - ethBalanceBefore, ethStake + expectedEthReward, "ETH withdrawal (principal + reward) is incorrect");
         assertEq(erc20BalanceAfter - erc20BalanceBefore, erc20Stake + expectedErc20Reward, "ERC20 withdrawal (principal + reward) is incorrect");
-        
+
         assertEq(actualEthReward, expectedEthReward, "ETH reward calculation is incorrect");
         assertEq(actualErc20Reward, expectedErc20Reward, "ERC20 reward calculation is incorrect");
 
@@ -245,7 +245,7 @@ contract PoolManagerTest is Test {
 
         uint256 expectedRemainingEthBalance = 5 ether - (5 ether * sourcePoolManager.PerFee()) / 1_000_000;
         assertEq(sourcePoolManager.FundingPoolBalance(ethTokenAddress), expectedRemainingEthBalance, "FundingPoolBalance for ETH should equal bridged amount minus fees");
-        
+
         uint256 expectedRemainingErc20Balance = 5 ether - (5 ether * sourcePoolManager.PerFee()) / 1_000_000;
         assertEq(sourcePoolManager.FundingPoolBalance(address(erc20Token)), expectedRemainingErc20Balance, "FundingPoolBalance for ERC20 should equal bridged amount minus fees");
     }
@@ -257,7 +257,7 @@ contract PoolManagerTest is Test {
         PoolManager.Pool memory erc20Pool = sourcePoolManager.getPool(address(erc20Token), 1);
 
         uint256 expectedErc20Reward = (erc20Stake * erc20Pool.TotalFee) / erc20Pool.TotalAmount;
-        
+
         uint256 erc20BalanceBefore = erc20Token.balanceOf(cat);
 
         vm.prank(cat);
@@ -266,9 +266,9 @@ contract PoolManagerTest is Test {
         uint256 erc20BalanceAfter = erc20Token.balanceOf(cat);
 
         assertEq(erc20BalanceAfter - erc20BalanceBefore, expectedErc20Reward, "ERC20 reward is incorrect");
-        
+
         assertEq(sourcePoolManager.getUserLength(cat), 2, "User's stake array should still have 2 entries after claiming rewards");
-        
+
         uint256 expectedRemainingErc20Balance = erc20Stake + 5 ether - (5 ether * sourcePoolManager.PerFee()) / 1_000_000;
         assertEq(sourcePoolManager.FundingPoolBalance(address(erc20Token)), expectedRemainingErc20Balance, "FundingPoolBalance for ERC20 should include stake and bridged amount minus fees");
 
@@ -285,7 +285,7 @@ contract PoolManagerTest is Test {
 
         uint256 expectedEthReward = (ethStake * ethPool.TotalFee) / ethPool.TotalAmount;
         uint256 expectedErc20Reward = (erc20Stake * erc20Pool.TotalFee) / erc20Pool.TotalAmount;
-        
+
         uint256 ethBalanceBefore = cat.balance;
         uint256 erc20BalanceBefore = erc20Token.balanceOf(cat);
 
@@ -297,12 +297,12 @@ contract PoolManagerTest is Test {
 
         assertEq(ethBalanceAfter - ethBalanceBefore, expectedEthReward, "ETH reward is incorrect");
         assertEq(erc20BalanceAfter - erc20BalanceBefore, expectedErc20Reward, "ERC20 reward is incorrect");
-        
+
         assertEq(sourcePoolManager.getUserLength(cat), 2, "User's stake array should still have 2 entries after claiming rewards");
 
         uint256 expectedRemainingEthBalance = ethStake + 5 ether - (5 ether * sourcePoolManager.PerFee()) / 1_000_000;
         assertEq(sourcePoolManager.FundingPoolBalance(ethTokenAddress), expectedRemainingEthBalance, "FundingPoolBalance for ETH should include stake and bridged amount minus fees");
-        
+
         uint256 expectedRemainingErc20Balance = erc20Stake + 5 ether - (5 ether * sourcePoolManager.PerFee()) / 1_000_000;
         assertEq(sourcePoolManager.FundingPoolBalance(address(erc20Token)), expectedRemainingErc20Balance, "FundingPoolBalance for ERC20 should include stake and bridged amount minus fees");
     }
@@ -327,11 +327,11 @@ contract PoolManagerTest is Test {
         erc20Token.approve(address(sourcePoolManager), erc20Stake);
         sourcePoolManager.DepositAndStakingERC20(address(erc20Token), erc20Stake);
         vm.stopPrank();
-        
+
         for (uint i = 0; i < 5; i++) {
             _bridge_ETH(1, bridge_cat, bridge_seek);
             _bridge_ERC20(1, bridge_cat, bridge_seek);
-        } 
+        }
 
         PoolManager.Pool memory ethPoolToComplete = sourcePoolManager.getPool(ethTokenAddress, 1);
         vm.warp(ethPoolToComplete.endTimestamp + 1 hours);
