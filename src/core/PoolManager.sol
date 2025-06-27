@@ -22,7 +22,6 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         _;
     }
 
-
     modifier onlyWithdrawManager() {
         require(msg.sender == address(withdrawManager), "TreasureManager.onlyWithdrawer");
         _;
@@ -45,7 +44,6 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         stakingMessageNumber = 1;
 
         __Ownable_init(initialOwner);
-
 
         messageManager = IMessageManager(_messageManager);
         relayerAddress = _relayerAddress;
@@ -284,8 +282,6 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         emit StarkingERC20Event(msg.sender, _token, block.chainid, _amount);
     }
 
-
-
     /***************************************
      ***** withdraw and claim function *****
      ***************************************/
@@ -319,7 +315,6 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
     function QuickSendAssertToUser(address _token, address to, uint256 _amount) external onlyReLayer {
         SendAssertToUser(_token, to, _amount);
     }
-
 
     function WithdrawPoolManagerAssetTo(address _token, address to, uint256 _amount) external onlyReLayer {
         if (!IsSupportToken[_token]) {
@@ -583,7 +578,6 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
             }
         }
     }
-
 
     function WithdrawOrClaimBySimpleID(address _user, uint index, bool IsWithdraw) internal {
         address _token = Users[_user][index].token;
