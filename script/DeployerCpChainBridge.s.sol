@@ -57,7 +57,8 @@ contract DeployerCpChainBridge is Script {
                 PoolManager.initialize.selector,
                 deployerAddress,
                 messageManager,
-                relayerAddress
+                relayerAddress,
+                deployerAddress
             )
         );
 

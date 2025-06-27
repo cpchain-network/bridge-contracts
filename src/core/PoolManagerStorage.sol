@@ -21,6 +21,7 @@ abstract contract PoolManagerStorage is IPoolManager{
 
     address[] public SupportTokens;
     address public assetBalanceMessager;
+    address public withdrawManager;
 
 
     mapping(uint256 => bool) public IsSupportedChainId;
