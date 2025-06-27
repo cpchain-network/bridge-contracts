@@ -41,7 +41,7 @@ contract MessageManager is Initializable, ReentrancyGuardUpgradeable, OwnableUpg
         emit MessageSent(sourceChainId, destChainId, tokenAddress, _from, _to, _fee, _value, messageNumber, messageHash);
     }
 
-    function claimMessage(uint256 sourceChainId, uint256 destChainId, address tokenAddress, address _from, address _to, uint256 _fee, uint256 _value, uint256 _nonce) external onlyTokenBridge nonReentrant {
+    function claimMessage(uint256 sourceChainId, uint256 destChainId, address tokenAddress, address _from, address _to, uint256 _value, uint256 _fee, uint256 _nonce) external onlyTokenBridge nonReentrant {
         bytes32 messageHash = keccak256(
             abi.encode(sourceChainId, destChainId, tokenAddress, _from, _to, _fee, _value, _nonce)
         );

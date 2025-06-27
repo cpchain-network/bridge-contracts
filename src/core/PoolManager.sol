@@ -161,7 +161,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         return true;
     }
 
-    function BridgeFinalizeETH(uint256 sourceChainId, uint256 destChainId, address to, uint256 amount, uint256 _fee, uint256 _nonce) external payable onlyReLayer returns (bool) {
+    function BridgeFinalizeETH(uint256 sourceChainId, uint256 destChainId, address from, address to, uint256 amount, uint256 _fee, uint256 _nonce) external payable onlyReLayer returns (bool) {
         if (destChainId != block.chainid) {
             revert sourceChainIdError();
         }
@@ -177,14 +177,14 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
 
         FundingPoolBalance[ETHAddress] -= amount;
 
-        messageManager.claimMessage(sourceChainId, destChainId, ETHAddress, msg.sender, to, _fee, amount, _nonce);
+        messageManager.claimMessage(sourceChainId, destChainId, ETHAddress, from, to, amount, _fee, _nonce);
 
         emit FinalizeETH(sourceChainId, destChainId, address(this), to, amount);
 
         return true;
     }
 
-    function BridgeFinalizeERC20(uint256 sourceChainId, uint256 destChainId, address to, address ERC20Address, uint256 amount, uint256 _fee, uint256 _nonce) external onlyReLayer returns (bool) {
+    function BridgeFinalizeERC20(uint256 sourceChainId, uint256 destChainId, address from, address to, address ERC20Address, uint256 amount, uint256 _fee, uint256 _nonce) external onlyReLayer returns (bool) {
         if (destChainId != block.chainid) {
             revert sourceChainIdError();
         }
@@ -202,7 +202,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
 
         FundingPoolBalance[ERC20Address] -= amount;
 
-        messageManager.claimMessage(sourceChainId, destChainId, ERC20Address, msg.sender, to, _fee, amount, _nonce);
+        messageManager.claimMessage(sourceChainId, destChainId, ERC20Address, from, to, amount, _fee, _nonce);
 
         emit FinalizeERC20(sourceChainId, destChainId, ERC20Address, address(this), to, amount);
 
