@@ -25,6 +25,19 @@ interface IPoolManager {
         uint value;
     }
 
+    event DepositToken(
+        address indexed tokenAddress,
+        address indexed sender,
+        uint256 amount
+    );
+
+    event WithdrawToken(
+        address indexed tokenAddress,
+        address sender,
+        address withdrawAddress,
+        uint256 amount
+    );
+
     event StarkingERC20Event(
         address indexed user,
         address indexed token,
@@ -132,7 +145,7 @@ interface IPoolManager {
     error sourceChainIsDestChainError();
 
     error TransferETHFailed();
-
+    
     function BridgeInitiateETH(uint256 sourceChainId, uint256 destChainId, address to) external payable returns (bool);
     function BridgeInitiateERC20(uint256 sourceChainId, uint256 destChainId, address to, address ERC20Address, uint256 value) external returns (bool);
 

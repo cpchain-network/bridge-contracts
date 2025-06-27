@@ -26,6 +26,10 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         _disableInitializers();
     }
 
+    receive() external payable {
+        depositEthToBridge();
+    }
+
     function initialize(address initialOwner, address _messageManager, address _relayerAddress) public initializer  {
         __ReentrancyGuard_init();
 
@@ -39,6 +43,30 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
 
         messageManager = IMessageManager(_messageManager);
         relayerAddress = _relayerAddress;
+    }
+
+    function depositEthToBridge() public payable nonReentrant returns (bool) {
+        FundingPoolBalance[ETHAddress] += msg.value;
+        emit DepositToken(
+            ETHAddress,
+            msg.sender,
+            msg.value
+        );
+        return true;
+    }
+
+    function depositErc20ToBridge(address tokenAddress, uint256 amount) public returns (bool) {
+        if (!IsSupportToken[tokenAddress]) {
+            revert TokenIsNotSupported(tokenAddress);
+        }
+        IERC20(tokenAddress).safeTransferFrom(msg.sender, address(this), amount);
+        FundingPoolBalance[tokenAddress] += amount;
+        emit DepositToken(
+            tokenAddress,
+            msg.sender,
+            amount
+        );
+        return true;
     }
 
     function BridgeInitiateETH(uint256 sourceChainId, uint256 destChainId, address to) external nonReentrant payable returns (bool) {

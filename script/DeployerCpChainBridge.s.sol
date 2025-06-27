@@ -36,7 +36,7 @@ contract DeployerCpChainBridge is Script {
         messageManagerProxyAdmin = ProxyAdmin(getProxyAdminAddress(address(proxyMessageManager)));
 
         TransparentUpgradeableProxy proxyPoolManager = new TransparentUpgradeableProxy(address(emptyContract), cpChainMultiSign, "");
-        poolManager = PoolManager(address(proxyPoolManager));
+        poolManager = PoolManager(payable(address(proxyPoolManager)));
         poolManagerImplementation = new PoolManager();
         poolManagerProxyAdmin = ProxyAdmin(getProxyAdminAddress(address(proxyPoolManager)));
 
