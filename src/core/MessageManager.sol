@@ -28,25 +28,25 @@ contract MessageManager is Initializable, ReentrancyGuardUpgradeable, OwnableUpg
         _;
     }
 
-    function sendMessage(uint256 sourceChainId, uint256 destChainId, address tokenAddress, address _from, address _to, uint256 _value, uint256 _fee) external onlyTokenBridge {
+    function sendMessage(uint256 sourceChainId, uint256 destChainId, address sourceTokenAddress, address destTokenAddress, address _from, address _to, uint256 _value, uint256 _fee) external onlyTokenBridge {
         if (_to == address(0)) {
             revert ZeroAddressNotAllowed();
         }
         uint256 messageNumber = nextMessageNumber;
         bytes32 messageHash = keccak256(
-            abi.encode(sourceChainId, destChainId, tokenAddress, _from, _to, _fee, _value, messageNumber)
+            abi.encode(sourceChainId, destChainId, sourceTokenAddress, destTokenAddress, _from, _to, _fee, _value, messageNumber)
         );
         nextMessageNumber++;
         sentMessageStatus[messageHash] = true;
-        emit MessageSent(sourceChainId, destChainId, tokenAddress, _from, _to, _fee, _value, messageNumber, messageHash);
+        emit MessageSent(sourceChainId, destChainId, sourceTokenAddress, destTokenAddress, _from, _to, _fee, _value, messageNumber, messageHash);
     }
 
-    function claimMessage(uint256 sourceChainId, uint256 destChainId, address tokenAddress, address _from, address _to, uint256 _value, uint256 _fee, uint256 _nonce) external onlyTokenBridge nonReentrant {
+    function claimMessage(uint256 sourceChainId, uint256 destChainId, address sourceTokenAddress, address destTokenAddress, address _from, address _to, uint256 _value, uint256 _fee, uint256 _nonce) external onlyTokenBridge nonReentrant {
         bytes32 messageHash = keccak256(
-            abi.encode(sourceChainId, destChainId, tokenAddress, _from, _to, _fee, _value, _nonce)
+            abi.encode(sourceChainId, destChainId, sourceTokenAddress, destTokenAddress, _from, _to, _fee, _value, _nonce)
         );
         require(!cliamMessageStatus[messageHash], "Message not found!");
         cliamMessageStatus[messageHash] = true;
-        emit MessageClaimed(sourceChainId, destChainId, tokenAddress, messageHash, _nonce);
+        emit MessageClaimed(sourceChainId, destChainId, sourceTokenAddress, destTokenAddress, messageHash, _nonce);
     }
 }

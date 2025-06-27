@@ -165,7 +165,7 @@ contract PoolManagerTest is Test {
         vm.chainId(SOURCE_CHAIN_ID);
         vm.startPrank(from);
         erc20Token.approve(address(sourcePoolManager), bridgeAmount);
-        sourcePoolManager.BridgeInitiateERC20(SOURCE_CHAIN_ID, DEST_CHAIN_ID, seek, address(erc20Token), bridgeAmount);
+        sourcePoolManager.BridgeInitiateERC20(SOURCE_CHAIN_ID, DEST_CHAIN_ID, seek, address(erc20Token), address(erc20Token), bridgeAmount);
         vm.stopPrank();
 
         assertEq(erc20Token.balanceOf(address(sourcePoolManager)), balanceBefore + bridgeAmount, "Contract ERC20 balance should equal bridgeAmount");
