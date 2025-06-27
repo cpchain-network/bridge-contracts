@@ -47,6 +47,6 @@ contract MessageManager is Initializable, ReentrancyGuardUpgradeable, OwnableUpg
         );
         require(!cliamMessageStatus[messageHash], "Message not found!");
         cliamMessageStatus[messageHash] = true;
-        emit MessageClaimed(sourceChainId, destChainId, tokenAddress, messageHash);
+        emit MessageClaimed(sourceChainId, destChainId, tokenAddress, messageHash, _nonce);
     }
 }

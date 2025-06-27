@@ -18,7 +18,8 @@ interface IMessageManager {
         uint256 sourceChainId,
         uint256 destChainId,
         address tokenAddress,
-        bytes32 indexed _messageHash
+        bytes32 indexed _messageHash,
+        uint256 _nonce
     );
 
     error ZeroAddressNotAllowed();
