@@ -11,7 +11,7 @@ import { MessageManager } from "../src/core/MessageManager.sol";
 import { PoolManager } from "../src/core/PoolManager.sol";
 
 contract UpgraderCpChainBridge is Script {
-    // 已部署的代理合约地址
+
     address public constant POOL_MANAGER_PROXY = '';
 
     function run() public {
@@ -29,12 +29,12 @@ contract UpgraderCpChainBridge is Script {
         
         vm.startBroadcast(deployerPrivateKey);
         
-        // 部署新的实现合约
+
         PoolManager newPoolManagerImplementation = new PoolManager();
         
         console.log("New PoolManager implementation:", address(newPoolManagerImplementation));
         
-        // 升级PoolManager实现
+
         poolManagerProxyAdmin.upgradeAndCall(
             ITransparentUpgradeableProxy(POOL_MANAGER_PROXY),
             address(newPoolManagerImplementation),

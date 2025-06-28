@@ -11,7 +11,7 @@ import { MessageManager } from "../src/core/MessageManager.sol";
 import { PoolManager } from "../src/core/PoolManager.sol";
 
 contract UpgraderCpChainBridge is Script {
-    // 已部署的代理合约地址
+
     address public constant MESSAGE_MANAGER_PROXY = '';
 
     function run() public {
