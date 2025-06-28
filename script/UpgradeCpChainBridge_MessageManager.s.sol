@@ -12,7 +12,7 @@ import { PoolManager } from "../src/core/PoolManager.sol";
 
 contract UpgraderCpChainBridge is Script {
     // 已部署的代理合约地址
-    address public constant MESSAGE_MANAGER_PROXY = 0x588D48cb0B8Ff9ec18006a914914cF12Ae224aD0;
+    address public constant MESSAGE_MANAGER_PROXY = '';
 
     function run() public {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
