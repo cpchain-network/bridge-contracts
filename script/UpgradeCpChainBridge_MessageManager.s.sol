@@ -12,32 +12,31 @@ import { PoolManager } from "../src/core/PoolManager.sol";
 
 contract UpgraderCpChainBridge is Script {
     // 已部署的代理合约地址
-    address public constant POOL_MANAGER_PROXY = 0x1FB71BA7D57fC4709408a351E554CaC082643B0e;
+    address public constant MESSAGE_MANAGER_PROXY = 0x588D48cb0B8Ff9ec18006a914914cF12Ae224aD0;
 
     function run() public {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address deployerAddress = vm.addr(deployerPrivateKey);
         
         console.log("Deployer address:", deployerAddress);
-        console.log("Pool Manager Proxy:", POOL_MANAGER_PROXY);
+        console.log("Message Manager Proxy:", MESSAGE_MANAGER_PROXY);
         
 
-        address proxyAdminAddress = getProxyAdminAddress(POOL_MANAGER_PROXY);
-        console.log("Calculated Pool Manager Proxy Admin:", proxyAdminAddress);
+        address proxyAdminAddress = getProxyAdminAddress(MESSAGE_MANAGER_PROXY);
+        console.log("Calculated Message Manager Proxy Admin:", proxyAdminAddress);
         
-        ProxyAdmin poolManagerProxyAdmin = ProxyAdmin(proxyAdminAddress);
+        ProxyAdmin messageManagerProxyAdmin = ProxyAdmin(proxyAdminAddress);
         
         vm.startBroadcast(deployerPrivateKey);
         
-        // 部署新的实现合约
-        PoolManager newPoolManagerImplementation = new PoolManager();
+        MessageManager newMessageManagerImplementation = new MessageManager();
         
-        console.log("New PoolManager implementation:", address(newPoolManagerImplementation));
+        console.log("New MessageManager implementation:", address(newMessageManagerImplementation));
         
-        // 升级PoolManager实现
-        poolManagerProxyAdmin.upgradeAndCall(
-            ITransparentUpgradeableProxy(POOL_MANAGER_PROXY),
-            address(newPoolManagerImplementation),
+
+        messageManagerProxyAdmin.upgradeAndCall(
+            ITransparentUpgradeableProxy(MESSAGE_MANAGER_PROXY),
+            address(newMessageManagerImplementation),
             ""
         );
         
