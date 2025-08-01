@@ -50,7 +50,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         withdrawManager = _withdrawManager;
     }
 
-    function depositEthToBridge() public payable nonReentrant returns (bool) {
+    function depositEthToBridge() public payable whenNotPaused nonReentrant returns (bool) {
         FundingPoolBalance[ETHAddress] += msg.value;
         emit DepositToken(
             ETHAddress,
@@ -60,7 +60,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         return true;
     }
 
-    function depositErc20ToBridge(address tokenAddress, uint256 amount) public returns (bool) {
+    function depositErc20ToBridge(address tokenAddress, uint256 amount) public whenNotPaused nonReentrant returns (bool) {
         if (!IsSupportToken[tokenAddress]) {
             revert TokenIsNotSupported(tokenAddress);
         }
@@ -74,7 +74,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         return true;
     }
 
-    function withdrawEthFromBridge(address payable withdrawAddress, uint256 amount) public payable onlyWithdrawManager returns (bool) {
+    function withdrawEthFromBridge(address payable withdrawAddress, uint256 amount) public payable whenNotPaused onlyWithdrawManager returns (bool) {
         require(address(this).balance >= amount, "PoolManager withdrawEthFromBridge: insufficient ETH balance in contract");
         FundingPoolBalance[ETHAddress] -= amount;
         (bool success, ) = withdrawAddress.call{value: amount}("");
@@ -90,7 +90,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         return true;
     }
 
-    function withdrawErc20FromBridge(address tokenAddress, address withdrawAddress, uint256 amount) public onlyWithdrawManager returns (bool) {
+    function withdrawErc20FromBridge(address tokenAddress, address withdrawAddress, uint256 amount) public whenNotPaused onlyWithdrawManager returns (bool) {
         require(FundingPoolBalance[tokenAddress] >= amount, "PoolManager withdrawEthFromBridge: Insufficient token balance in contract");
         FundingPoolBalance[tokenAddress] -= amount;
         IERC20(tokenAddress).safeTransfer(withdrawAddress, amount);
@@ -103,7 +103,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         return true;
     }
 
-    function BridgeInitiateETH(uint256 sourceChainId, uint256 destChainId, address to) external nonReentrant payable returns (bool) {
+    function BridgeInitiateETH(uint256 sourceChainId, uint256 destChainId, address to) external whenNotPaused nonReentrant payable returns (bool) {
         if (sourceChainId != block.chainid) {
             revert sourceChainIdError();
         }
@@ -130,7 +130,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         return true;
     }
 
-    function BridgeInitiateERC20(uint256 sourceChainId, uint256 destChainId, address to, address sourceTokenAddress, address destTokenAddress, uint256 value) external nonReentrant returns (bool) {
+    function BridgeInitiateERC20(uint256 sourceChainId, uint256 destChainId, address to, address sourceTokenAddress, address destTokenAddress, uint256 value) external whenNotPaused nonReentrant returns (bool) {
         if (sourceChainId != block.chainid) {
             revert sourceChainIdError();
         }
@@ -161,7 +161,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         return true;
     }
 
-    function BridgeFinalizeETH(uint256 sourceChainId, uint256 destChainId, address from, address to, uint256 amount, uint256 _fee, uint256 _nonce) external payable onlyReLayer returns (bool) {
+    function BridgeFinalizeETH(uint256 sourceChainId, uint256 destChainId, address from, address to, uint256 amount, uint256 _fee, uint256 _nonce) external payable whenNotPaused onlyReLayer returns (bool) {
         if (destChainId != block.chainid) {
             revert sourceChainIdError();
         }
@@ -184,7 +184,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         return true;
     }
 
-    function BridgeFinalizeERC20(uint256 sourceChainId, uint256 destChainId, address from, address to,address sourceTokenAddress, address destTokenAddress, uint256 amount, uint256 _fee, uint256 _nonce) external onlyReLayer returns (bool) {
+    function BridgeFinalizeERC20(uint256 sourceChainId, uint256 destChainId, address from, address to,address sourceTokenAddress, address destTokenAddress, uint256 amount, uint256 _fee, uint256 _nonce) external whenNotPaused onlyReLayer returns (bool) {
         if (destChainId != block.chainid) {
             revert sourceChainIdError();
         }
@@ -312,11 +312,11 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         WithdrawOrClaimBySimpleID(msg.sender, i, false);
     }
 
-    function QuickSendAssertToUser(address _token, address to, uint256 _amount) external onlyReLayer {
+    function QuickSendAssertToUser(address _token, address to, uint256 _amount) external onlyWithdrawManager {
         SendAssertToUser(_token, to, _amount);
     }
 
-    function WithdrawPoolManagerAssetTo(address _token, address to, uint256 _amount) external onlyReLayer {
+    function WithdrawPoolManagerAssetTo(address _token, address to, uint256 _amount) external onlyWithdrawManager {
         if (!IsSupportToken[_token]) {
             revert TokenIsNotSupported(_token);
         }
@@ -411,10 +411,12 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
 
     function setMinTransferAmount(uint256 _MinTransferAmount) external onlyReLayer {
         MinTransferAmount = _MinTransferAmount;
+        emit SetMinTransferAmount(_MinTransferAmount);
     }
 
     function setValidChainId(uint256 chainId, bool isValid) external onlyReLayer {
         IsSupportedChainId[chainId] = isValid;
+        emit SetValidChainId(chainId, isValid);
     }
 
     function setSupportERC20Token(address ERC20Address, bool isValid) external onlyReLayer {
@@ -422,11 +424,13 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         if (isValid) {
             SupportTokens.push(ERC20Address);
         }
+        emit SetSupportTokenEvent(ERC20Address, isValid, block.chainid);
     }
 
     function setPerFee(uint256 _PerFee) external onlyReLayer {
         require(_PerFee < 1_000_000);
         PerFee = _PerFee;
+        emit SetPerFee(_PerFee);
     }
 
     function setMinStakeAmount(address _token, uint256 _amount) external onlyReLayer {
@@ -497,11 +501,11 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         }
     }
 
-    function pause() external onlyReLayer {
+    function pause() external onlyOwner {
         _pause();
     }
 
-    function unpause() external onlyReLayer {
+    function unpause() external onlyOwner {
         _unpause();
     }
 
@@ -597,7 +601,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         }
 
         Amount += Reward;
-        Users[_user][index].isWithdrawed = true;
+
         if (IsWithdraw) {
             Pools[_token][EndPoolId].TotalAmount -= Users[_user][index].Amount;
             SendAssertToUser(_token, _user, Amount);
