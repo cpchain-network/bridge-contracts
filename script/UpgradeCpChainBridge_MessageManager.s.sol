@@ -12,34 +12,34 @@ import { PoolManager } from "../src/core/PoolManager.sol";
 
 contract UpgraderCpChainBridge is Script {
 
-    address public constant MESSAGE_MANAGER_PROXY = '';
+    address public MESSAGE_MANAGER_PROXY = vm.envAddress("MESSAGE_MANAGER_PROXY");
 
     function run() public {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address deployerAddress = vm.addr(deployerPrivateKey);
-        
+
         console.log("Deployer address:", deployerAddress);
         console.log("Message Manager Proxy:", MESSAGE_MANAGER_PROXY);
-        
+
 
         address proxyAdminAddress = getProxyAdminAddress(MESSAGE_MANAGER_PROXY);
         console.log("Calculated Message Manager Proxy Admin:", proxyAdminAddress);
-        
+
         ProxyAdmin messageManagerProxyAdmin = ProxyAdmin(proxyAdminAddress);
-        
+
         vm.startBroadcast(deployerPrivateKey);
-        
+
         MessageManager newMessageManagerImplementation = new MessageManager();
-        
+
         console.log("New MessageManager implementation:", address(newMessageManagerImplementation));
-        
+
 
         messageManagerProxyAdmin.upgradeAndCall(
             ITransparentUpgradeableProxy(MESSAGE_MANAGER_PROXY),
             address(newMessageManagerImplementation),
             ""
         );
-        
+
         console.log("Upgrade completed successfully!");
         vm.stopBroadcast();
     }

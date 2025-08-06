@@ -109,6 +109,9 @@ interface IPoolManager {
     event CompletePoolEvent(address indexed token, uint256 poolIndex, uint256 chainId);
     event SetMinStakeAmountEvent(address indexed token, uint256 amount, uint256 chainId);
     event SetSupportTokenEvent(address indexed token, bool isSupport, uint256 chainId);
+    event SetValidChainId(uint256 chainId, bool isValid);
+    event SetPerFee(uint256 chainId);
+    event SetMinTransferAmount(uint256 _MinTransferAmount);
 
     error NoReward();
 
