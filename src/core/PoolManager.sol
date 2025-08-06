@@ -103,7 +103,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         return true;
     }
 
-    function BridgeInitiateETH(uint256 sourceChainId, uint256 destChainId, address to) external whenNotPaused nonReentrant payable returns (bool) {
+    function BridgeInitiateETH(uint256 sourceChainId, uint256 destChainId, address destTokenAddress, address to) external whenNotPaused nonReentrant payable returns (bool) {
         if (sourceChainId != block.chainid) {
             revert sourceChainIdError();
         }
@@ -123,9 +123,9 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
 
         FeePoolValue[ETHAddress] += fee;
 
-        messageManager.sendMessage(block.chainid, destChainId, ETHAddress, ETHAddress, msg.sender, to, amount, fee);
+        messageManager.sendMessage(block.chainid, destChainId, ETHAddress, destTokenAddress, msg.sender, to, amount, fee);
 
-        emit InitiateETH(sourceChainId, destChainId, msg.sender, to, amount);
+        emit InitiateETH(sourceChainId, destChainId, destTokenAddress, msg.sender, to, amount);
 
         return true;
     }
@@ -161,7 +161,7 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
         return true;
     }
 
-    function BridgeFinalizeETH(uint256 sourceChainId, uint256 destChainId, address from, address to, uint256 amount, uint256 _fee, uint256 _nonce) external payable whenNotPaused onlyReLayer returns (bool) {
+    function BridgeFinalizeETH(uint256 sourceChainId, uint256 destChainId, address sourceTokenAddress, address from, address to, uint256 amount, uint256 _fee, uint256 _nonce) external payable whenNotPaused onlyReLayer returns (bool) {
         if (destChainId != block.chainid) {
             revert sourceChainIdError();
         }
@@ -177,9 +177,9 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
 
         FundingPoolBalance[ETHAddress] -= amount;
 
-        messageManager.claimMessage(sourceChainId, destChainId, ETHAddress, ETHAddress, from, to, amount, _fee, _nonce);
+        messageManager.claimMessage(sourceChainId, destChainId, sourceTokenAddress, ETHAddress, from, to, amount, _fee, _nonce);
 
-        emit FinalizeETH(sourceChainId, destChainId, address(this), to, amount);
+        emit FinalizeETH(sourceChainId, destChainId, sourceTokenAddress, address(this), to, amount);
 
         return true;
     }

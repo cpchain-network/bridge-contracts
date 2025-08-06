@@ -54,6 +54,7 @@ interface IPoolManager {
     event InitiateETH(
         uint256 sourceChainId,
         uint256 destChainId,
+        address destTokenAddress,
         address indexed from,
         address indexed to,
         uint256 value
@@ -72,6 +73,7 @@ interface IPoolManager {
     event FinalizeETH(
         uint256 sourceChainId,
         uint256 destChainId,
+        address sourceTokenAddress,
         address indexed from,
         address indexed to,
         uint256 value
