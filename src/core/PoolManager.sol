@@ -17,13 +17,16 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
     modifier onlyReLayer() {
         require(
             msg.sender == address(relayerAddress),
-            "onlyReLayer"
+            "TreasureManager:onlyReLayer only relayer call this function"
         );
         _;
     }
 
     modifier onlyWithdrawManager() {
-        require(msg.sender == address(withdrawManager), "TreasureManager.onlyWithdrawer");
+        require(
+            msg.sender == address(withdrawManager),
+            "TreasureManager:onlyWithdrawManager only withdraw manager can call this function"
+        );
         _;
     }
 
@@ -91,7 +94,10 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
     }
 
     function withdrawErc20FromBridge(address tokenAddress, address withdrawAddress, uint256 amount) public whenNotPaused onlyWithdrawManager returns (bool) {
-        require(FundingPoolBalance[tokenAddress] >= amount, "PoolManager withdrawEthFromBridge: Insufficient token balance in contract");
+        require(
+            FundingPoolBalance[tokenAddress] >= amount,
+            "PoolManager withdrawEthFromBridge: Insufficient token balance in contract"
+        );
         FundingPoolBalance[tokenAddress] -= amount;
         IERC20(tokenAddress).safeTransfer(withdrawAddress, amount);
         emit WithdrawToken(
@@ -197,7 +203,11 @@ contract PoolManager is Initializable, OwnableUpgradeable, ReentrancyGuardUpgrad
             revert TokenIsNotSupported(destTokenAddress);
         }
 
-        require(IERC20(destTokenAddress).balanceOf(address(this)) >= amount, "PoolManager: insufficient token balance for transfer");
+        require(IERC20(destTokenAddress).balanceOf(
+            address(this)) >= amount,
+            "PoolManager: insufficient token balance for transfer"
+        );
+
         IERC20(destTokenAddress).safeTransfer(to, amount);
 
         FundingPoolBalance[destTokenAddress] -= amount;
