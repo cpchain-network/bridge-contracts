@@ -153,10 +153,10 @@ interface IPoolManager {
 
     error TransferETHFailed();
 
-    function BridgeInitiateETH(uint256 sourceChainId, uint256 destChainId, address to) external payable returns (bool);
+    function BridgeInitiateETH(uint256 sourceChainId, uint256 destChainId, address destTokenAddress, address to) external payable returns (bool);
     function BridgeInitiateERC20(uint256 sourceChainId, uint256 destChainId, address to, address sourceTokenAddress, address destTokenAddress, uint256 value) external returns (bool);
 
-    function BridgeFinalizeETH(uint256 sourceChainId, uint256 destChainId, address from, address to, uint256 amount, uint256 _fee, uint256 _nonce) external payable returns (bool);
+    function BridgeFinalizeETH(uint256 sourceChainId, uint256 destChainId, address sourceTokenAddress, address from, address to, uint256 amount, uint256 _fee, uint256 _nonce) external payable returns (bool);
     function BridgeFinalizeERC20(uint256 sourceChainId, uint256 destChainId, address from, address to, address sourceTokenAddress, address destTokenAddress, uint256 amount, uint256 _fee, uint256 _nonce) external returns (bool);
 
     function DepositAndStakingETH() external payable;
