@@ -31,6 +31,4 @@ abstract contract PoolManagerStorage is IPoolManager{
     mapping(address => uint256) public MinStakeAmount;
 
     mapping(address => Pool[]) public Pools;
-    mapping(address => User[]) public Users;
-
 }
